@@ -16,6 +16,7 @@ behavioral detection engineering, and production-minded systems design.
 The EDR is split across two halves — a pattern that mirrors how production tools
 like Falco, Cilium, and Datadog's agent work:
 
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                          KERNEL SPACE                           │
 │                                                                 │
@@ -45,6 +46,7 @@ like Falco, Cilium, and Datadog's agent work:
 │                        dashboard/cli.py                        │
 │                      (Rich live terminal UI)                   │
 └────────────────────────────────────────────────────────────────┘
+```
 
 ## Detection Capabilities
 
@@ -90,6 +92,7 @@ activity surfaces at higher severity than isolated events.
 - Root privileges (eBPF requires `CAP_BPF` or root)
 
 ### Install dependencies
+
 ```bash
 # Fedora
 sudo dnf install bcc bcc-tools python3-bcc kernel-devel
@@ -102,8 +105,9 @@ pip install rich pyyaml
 ```
 
 ### Run
+
 ```bash
-git clone https://github.com/jakespillers/ebpf-edr
+git clone https://github.com/jspillers10/ebpf-edr
 cd ebpf-edr
 sudo python3 agent/collector.py
 ```
@@ -111,6 +115,7 @@ sudo python3 agent/collector.py
 ### Run attack simulations
 
 In a second terminal while the collector is running:
+
 ```bash
 # Syscall-based attacks: /tmp execution, ptrace injection, /proc enumeration
 sudo python3 tests/attack_sim/syscall_sim.py
@@ -122,6 +127,7 @@ python3 tests/attack_sim/exfil_sim.py
 ---
 
 ## Project Structure
+
 ```
 ebpf-edr/
 ├── probes/
@@ -153,6 +159,7 @@ ebpf-edr/
 ### Attack Simulation — Syscall
 
 Running `syscall_sim.py` against the live collector produces:
+
 ```
 [EXECVE] pid=XXXXX ppid=XXXXX uid=1000 | python3 -> /tmp/edr_test_payload.sh
 [EXECVE] pid=XXXXX ppid=XXXXX uid=1000 | edr_test_payload -> /usr/bin/whoami
@@ -166,6 +173,7 @@ Running `syscall_sim.py` against the live collector produces:
 ### Attack Simulation — Network
 
 Running `exfil_sim.py` against the live collector produces:
+
 ```
 [CONNECT] HIGH score=70 | python3 -> 1.1.1.1:4444 | Connection to sensitive port 4444 (METASPLOIT_DEFAULT)
 [CONNECT] HIGH score=40 | python3 -> 1.1.1.1:XX | High-frequency connections: 21+ in 30s
