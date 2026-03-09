@@ -1,0 +1,130 @@
+# rules.yaml — EDR tunable configuration
+# Modify thresholds and lists here without touching Python source.
+
+thresholds:
+  # Sliding window duration in seconds for /proc enumeration rate
+  proc_window_seconds: 30
+
+  # /proc reads per window before alerting (unknown processes)
+  proc_rate_low: 50
+  proc_rate_high: 150
+
+  # /proc reads per window for known-noisy processes (browsers, IDEs)
+  proc_rate_noisy: 200
+
+  # Minimum repeated connections to same (comm, ip, port) to flag beaconing
+  beacon_min_hits: 4
+
+  # Beaconing detection window in seconds
+  beacon_window_seconds: 120
+
+  # Connections per 30s window before high-frequency alert (unknown processes)
+  freq_threshold: 20
+
+  # Connections per 30s window for known-noisy processes
+  freq_threshold_noisy: 60
+
+  # High-frequency connection detection window in seconds
+  freq_window_seconds: 30
+
+reputation:
+  # Processes that are fully trusted - no alerts generated
+  trusted:
+    - systemd
+    - systemd-journal
+    - systemd-resolve
+    - systemd-userwor
+    - dbus-daemon
+    - NetworkManager
+    - sshd
+    - polkitd
+    - rtkit-daemon
+    - accounts-daemon
+    - gdm
+    - gnome-shell
+    - Xorg
+    - code
+
+  # Processes that are monitored but scored lower - known dev/debug tools
+  # that legitimately access /proc and sensitive files
+  monitored:
+    - python3
+    - python
+    - gdb
+    - strace
+    - ltrace
+    - valgrind
+    - perf
+    - lldb
+
+  # Processes that are inherently suspicious regardless of context
+  # Any match here adds score automatically
+  suspicious:
+    - mimikatz
+    - metasploit
+    - msfconsole
+    - netcat
+    - ncat
+    - socat
+    - empire
+    - cobalt
+
+high_value_files:
+  # Reads or writes to these paths always add score
+  # regardless of which process accesses them
+  credential_files:
+    - /etc/shadow
+    - /etc/passwd
+    - /etc/sudoers
+    - /etc/sudoers.d
+    - /root/.ssh
+    - /home/.ssh
+    - /etc/ssh/ssh_host_rsa_key
+    - /etc/ssh/ssh_host_ed25519_key
+
+  secret_stores:
+    - /etc/vault
+    - /etc/kubernetes/pki
+    - /var/lib/kubelet
+    - /etc/docker/daemon.json
+    - /.aws/credentials
+    - /.aws/config
+
+  system_integrity:
+    - /etc/ld.so.preload
+    - /etc/cron.d
+    - /etc/crontab
+    - /var/spool/cron
+    - /etc/systemd/system
+    - /lib/systemd/system
+    - /usr/lib/systemd/system
+
+sensitive_ports:
+  # Connections to these ports add score regardless of frequency
+  # Label is used in alert output
+  - port: 22
+    label: SSH
+  - port: 23
+    label: TELNET
+  - port: 3389
+    label: RDP
+  - port: 4444
+    label: METASPLOIT_DEFAULT
+  - port: 1337
+    label: LEET_C2
+  - port: 9001
+    label: TOR_DEFAULT
+  - port: 6667
+    label: IRC_C2
+  - port: 8080
+    label: ALT_HTTP_PROXY
+  - port: 1080
+    label: SOCKS_PROXY
+
+noisy_processes:
+  - curl
+  - wget
+  - firefox
+  - chrome
+  - chromium
+  - electron
