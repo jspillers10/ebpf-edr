@@ -26,7 +26,7 @@ like Falco, Cilium, and Datadog's agent work:
 │   │  ptrace  tracepoint  │       │  AF_INET + IPv6      │      │
 │   │  openat  tracepoint  │       └──────────┬───────────┘      │
 │   └──────────┬───────────┘                  │                  │
-│              │        BPF_PERF_OUTPUT        │                  │
+│              │        BPF_PERF_OUTPUT       │                  │
 └──────────────┼──────────────────────────────┼──────────────────┘
                │                              │
 ┌──────────────┼──────────────────────────────┼──────────────────┐
