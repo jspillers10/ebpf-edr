@@ -13,7 +13,7 @@ behavioral detection engineering, and production-minded systems design.
 
 ## Architecture
 
-The EDR is split across two halves — a pattern that mirrors how production tools
+The EDR is split across two halves, a pattern that mirrors how production tools
 like Falco, Cilium, and Datadog's agent work:
 
 ```
@@ -56,9 +56,9 @@ like Falco, Cilium, and Datadog's agent work:
 |-----------|-----------|----------|
 | Execution from `/tmp`, `/dev/shm` | execve tracepoint + path check | HIGH |
 | ptrace ATTACH on another process | ptrace tracepoint + op filter | HIGH |
-| /proc enumeration (process discovery) | openat sliding window, rate threshold | HIGH–CRITICAL |
+| /proc enumeration (process discovery) | openat sliding window, rate threshold | HIGH-CRITICAL |
 | High-value file access (`/etc/shadow`, SSH keys, etc.) | openat path matching | HIGH |
-| Suspicious process reputation | comm lookup against tiered list | INFO–HIGH |
+| Suspicious process reputation | comm lookup against tiered list | INFO-HIGH |
 
 ### Network Monitoring
 
@@ -67,19 +67,19 @@ like Falco, Cilium, and Datadog's agent work:
 | C2 beaconing | (comm, dst\_ip, dst\_port) tuple frequency over 120s window | HIGH |
 | High-frequency connections | connection count per 30s sliding window | HIGH |
 | Sensitive port access (22, 4444, 9001, etc.) | port lookup against labeled list | HIGH |
-| IPv4 and IPv6 coverage | connect tracepoint handles both address families | — |
+| IPv4 and IPv6 coverage | connect tracepoint handles both address families | - |
 
 ### Key Design Decisions
 
-**Kernel-side filtering** — the eBPF probes filter and structure events before passing
+**Kernel-side filtering** - the eBPF probes filter and structure events before passing
 them to userspace via a perf ring buffer. Only relevant events cross the kernel/user
 boundary, keeping CPU overhead low regardless of syscall volume.
 
-**Behavioral scoring** — events are not binary allow/deny. Each event accumulates a
+**Behavioral scoring** - events are not binary allow/deny. Each event accumulates a
 score across multiple dimensions (reputation, file sensitivity, rate) so correlated
 activity surfaces at higher severity than isolated events.
 
-**Config-driven thresholds** — all detection thresholds and watchlists live in
+**Config-driven thresholds** - all detection thresholds and watchlists live in
 `config/rules.yaml`. Tuning the EDR for a new environment requires no code changes.
 
 ## Quick Start
@@ -156,7 +156,7 @@ ebpf-edr/
 
 ![eBPF EDR Dashboard](docs/dashboard.png)
 
-### Attack Simulation — Syscall
+### Attack Simulation - Syscall
 
 Running `syscall_sim.py` against the live collector produces:
 
@@ -170,7 +170,7 @@ Running `syscall_sim.py` against the live collector produces:
 [OPENAT] HIGH score=70 | python3 -> /proc/XXXXX/status [READ] | /proc enumeration rate CRITICAL: 151 reads in 30s
 ```
 
-### Attack Simulation — Network
+### Attack Simulation - Network
 
 Running `exfil_sim.py` against the live collector produces:
 
@@ -190,31 +190,31 @@ teams look for. Each simulation maps to a real TTP:
 
 | Simulation | MITRE ATT&CK TTP |
 |------------|-----------------|
-| Execution from `/tmp` | T1059 — Command and Scripting Interpreter |
-| ptrace ATTACH | T1055.008 — Process Injection: ptrace |
-| /proc enumeration | T1057 — Process Discovery |
-| C2 beaconing | T1071 — Application Layer Protocol |
-| High-frequency port scan | T1046 — Network Service Discovery |
-| Sensitive port connection | T1571 — Non-Standard Port |
+| Execution from `/tmp` | T1059 - Command and Scripting Interpreter |
+| ptrace ATTACH | T1055.008 - Process Injection: ptrace |
+| /proc enumeration | T1057 - Process Discovery |
+| C2 beaconing | T1071 - Application Layer Protocol |
+| High-frequency port scan | T1046 - Network Service Discovery |
+| Sensitive port connection | T1571 - Non-Standard Port |
 
 ---
 
-## How It Works — eBPF Primer
+## How It Works - eBPF Primer
 
 eBPF programs run inside the Linux kernel in a sandboxed VM. They attach to
-tracepoints and fire on every matching syscall across every process on the system —
-no kernel module required, no reboot, minimal overhead.
+tracepoints and fire on every matching syscall across every process on the system.
+No kernel module required, no reboot, minimal overhead.
 
 This project uses **BCC (BPF Compiler Collection)** which compiles C eBPF programs
 at runtime and provides a Python API for consuming events from the kernel via a
-**perf ring buffer** — a lock-free circular buffer that the kernel writes to and
+**perf ring buffer**, a lock-free circular buffer that the kernel writes to and
 userspace reads from.
 
 The two halves pattern is deliberate:
 
-- **Kernel side** (`probes/*.c`) — filters and structures raw syscall data into
+- **Kernel side** (`probes/*.c`) - filters and structures raw syscall data into
   fixed-size structs, submits only relevant events. Runs at kernel speed.
-- **User side** (`agent/*.py`) — applies behavioral logic, maintains state across
+- **User side** (`agent/*.py`) - applies behavioral logic, maintains state across
   events (sliding windows, connection trackers), generates scored alerts.
 
 This mirrors how Falco, Cilium, and Datadog's eBPF agent are architected.
